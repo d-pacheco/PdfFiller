@@ -1,4 +1,3 @@
-from Config import Config
 import argparse
 import sys
 import re
@@ -9,6 +8,8 @@ from rich import print
 from os import listdir
 from os.path import isfile, join
 
+from Config import Config
+from VersionManager import VersionManager
 
 CURRENT_VERSION = 1.0
 
@@ -17,10 +18,15 @@ def init():
     parser.add_argument('-c', '--config', dest='configPath', default='./config/config.yaml', help='Path to a custom config file')
     parser.add_argument('-p', '--templates', dest='templatesPath', default='./templates', help='Path to all stored templates')
     parser.add_argument('-d', '--data', dest='dataPath', default='./data', help='Path to all stored data')
+    
     args = parser.parse_args()
     config = Config(args.configPath)
     templatePath = findTemplates(args.templatesPath)
     dataPath = findTemplates(args.dataPath)
+
+    if not VersionManager.isLatestVersion(CURRENT_VERSION):
+        print(f"[bold red]!!! NEW VERSION AVAILABLE !!!\nDownload it from: https://github.com/d-pacheco/PdfFiller/releases/latest")
+
     return config, templatePath, dataPath
 
 
@@ -29,6 +35,7 @@ def main(config: Config, templatePath: str, dataPath: str):
     if templateName != None:
         pdf_path = "{template_path}/{template_name}".format(template_path=templatePath, template_name=templateName)
         fill_pdf_form(pdf_path)
+
 
 def GetTemplate(templatePath):
     templateFiles = [f for f in listdir(templatePath) if isfile(join(templatePath, f))]
@@ -52,6 +59,7 @@ def GetTemplate(templatePath):
     else:
         print(f"[red]There are no template files available to select from")
         return None
+
 
 def fill_pdf_form(pdf_path):
     template_pdf = pdfrw.PdfReader(pdf_path)
